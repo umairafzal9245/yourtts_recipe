@@ -156,7 +156,7 @@ def collapse_whitespace(text):
 
 def urdu_cleaners(text):
 
-  phonemes = phonemize(text, language='ur', backend='espeak', strip=True, language_switch='remove-flags')
-  phonemes = collapse_whitespace(phonemes)
+  # phonemes = phonemize(text, language='ur', backend='espeak', strip=True, language_switch='remove-flags')
+  phonemes = collapse_whitespace(text)
   return phonemes
 

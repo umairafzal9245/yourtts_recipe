@@ -1755,7 +1755,8 @@ class Vits(BaseTTS):
 ##################################
 
 
-class VitsCharacters(BaseCharacters):
+class VitsCharacters(
+):
     """Characters class for VITs model for compatibility with pre-trained models"""
 
     def __init__(
