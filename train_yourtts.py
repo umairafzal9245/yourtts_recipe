@@ -40,15 +40,14 @@ BATCH_SIZE = 8
 # Note: If you add new datasets, please make sure that the dataset sampling rate and this parameter are matching, otherwise resample your audios
 SAMPLE_RATE = 16000
 
-# Max audio length in seconds to be used in training (every audio bigger than it will be ignored)
 MAX_AUDIO_LEN_IN_SECONDS = 10
 
 #path of vctk 
-VCTK_DOWNLOAD_PATH='./dataset/vctk'
+VCTK_DOWNLOAD_PATH='./datasets/vctk'
 
 # init configs
 vctk_config = BaseDatasetConfig(
-    formatter="vctkold", dataset_name="vctk", meta_file_train="", meta_file_val="", path=VCTK_DOWNLOAD_PATH, language="ur"
+    formatter="vctk_old", dataset_name="vctk", meta_file_train="", meta_file_val="", path=VCTK_DOWNLOAD_PATH, language="ur"
 )
 
 # Add here all datasets configs, in our case we just want to train with the VCTK dataset then we need to add just VCTK. Note: If you want to added new datasets just added they here and it will automatically compute the speaker embeddings (d-vectors) for this new dataset :)
@@ -56,7 +55,7 @@ DATASETS_CONFIG_LIST = [vctk_config]
 
 ### Extract speaker embeddings
 SPEAKER_ENCODER_CHECKPOINT_PATH = (
-    "./speaker_encoder/model_se.pth.tar"
+    "./speaker_encoder/model_se.pth"
 )
 SPEAKER_ENCODER_CONFIG_PATH = "./speaker_encoder/config_se.json"
 
@@ -84,7 +83,6 @@ for dataset_conf in DATASETS_CONFIG_LIST:
         )
     D_VECTOR_FILES.append(embeddings_file)
 
-
 # Audio config used in training.
 audio_config = VitsAudioConfig(
     sample_rate=SAMPLE_RATE,
@@ -105,8 +103,8 @@ model_args = VitsArgs(
     resblock_type_decoder="2",  # On the paper, we accidentally trained the YourTTS using ResNet blocks type 2, if you like you can use the ResNet blocks type 1 like the VITS model
     # Usefull parameters to enable the Speaker Consistency Loss (SCL) discribed in the paper
     # use_speaker_encoder_as_loss=True,
-    # speaker_encoder_model_path=SPEAKER_ENCODER_CHECKPOINT_PATH,
-    # speaker_encoder_config_path=SPEAKER_ENCODER_CONFIG_PATH,
+    speaker_encoder_model_path=SPEAKER_ENCODER_CHECKPOINT_PATH,
+    speaker_encoder_config_path=SPEAKER_ENCODER_CONFIG_PATH,
     # Usefull parameters to the enable multilingual training
     # use_language_embedding=True,
     # embedded_language_dim=4,
@@ -150,7 +148,7 @@ config = VitsConfig(
         bos="*",
         blank=None,
         characters="akəː.ɟbxtrhmɛpẽuʌʂsiloʋndɪfjqʃcɡʰʊwʈzɔɖʐɣðŋʒɹœɒθɐʔ",
-        punctuations=".",
+        punctuations=". ",
         phonemes="",
         is_unique=True,
         is_sorted=True,
@@ -165,31 +163,31 @@ config = VitsConfig(
     test_sentences=[
         [
             "ɪs rəpoːrʈ mẽ kʌhaː ɡajaː hɛ keːh askaː eːk ɡʌrda nɪkaːl diːaː ɡajaː hɛ.",
-            "i190717@nu.edu.pk",
+            "VCTK_old_i190717@nu.edu.pk",
             None,
             "ur",
         ],
         [
             "anʈrʌ neːʈ bʌnd mʊsalsal kərfeːoː foːɟi taːqət seː aʋaːm koː ɡoːlioːn seː cʰʌlniː kjaː ɟaː rʌhaː hɛ.",
-            "i190614@nu.edu.pk",
+            "VCTK_old_i190614@nu.edu.pk",
             None,
             "ur",
         ],
         [
             "kəraːci mẽ kʌi bərsoːn baːd dɛhʃat ɡʌrdi keː ʋaːqaːt mẽ kʌmi ʋaːqeː huːi ɔr amən bəhaːl haʋaː.",
-            "i190621@nu.edu.pk",
+            "VCTK_old_i190621@nu.edu.pk",
             None,
             "ur",
         ],
         [
             "sʌb kʊcʰ kʰʌp ɟaːtaːheː ɪs mẽ kaːraːʃəq hɛ diːʋaːnoːn kaːkaː miːm.",
-            "i190632@nu.edu.pk",
+            "VCTK_old_i190632@nu.edu.pk",
             None,
             "ur",
         ],
         [
             "ɟɪseː woː naːtoː nʌɡəl paːrheː hẽ oːrəna hiː ʊɡəl paːrheː hẽ.",
-            "i191976@nu.edu.pk",
+            "VCTK_old_i191976@nu.edu.pk",
             None,
             "ur",
         ],
@@ -198,6 +196,8 @@ config = VitsConfig(
     use_weighted_sampler=True,
     # Ensures that all speakers are seen in the training batch equally no matter how many samples each speaker has
     weighted_sampler_attrs={"speaker_name": 1.0},
+
+    weighted_sampler_multipliers={},
     # It defines the Speaker Consistency Loss (SCL) α to 9 like the paper
     speaker_encoder_loss_alpha=9.0,
 )
@@ -209,6 +209,9 @@ train_samples, eval_samples = load_tts_samples(
     eval_split_max_size=config.eval_split_max_size,
     eval_split_size=config.eval_split_size,
 )
+
+
+print(config)
 
 # Init the model
 model = Vits.init_from_config(config)

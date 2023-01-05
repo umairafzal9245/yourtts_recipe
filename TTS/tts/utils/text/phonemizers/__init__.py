@@ -1,7 +1,7 @@
 from TTS.tts.utils.text.phonemizers.base import BasePhonemizer
 from TTS.tts.utils.text.phonemizers.espeak_wrapper import ESpeak
 
-PHONEMIZERS = {b.name(): b for b in (ESpeak)}
+PHONEMIZERS = {ESpeak.name(): ESpeak}
 
 
 ESPEAK_LANGS = list(ESpeak.supported_languages().keys())
